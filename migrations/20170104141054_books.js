@@ -1,3 +1,4 @@
+'use strict';
 
 exports.up = function(knex) {
   return knex.schema.createTable('books', (table) => {
@@ -7,9 +8,8 @@ exports.up = function(knex) {
     table.string('genre').notNullable().defaultTo('');
     table.text('description').notNullable().defaultTo('');
     table.text('cover_url').notNullable().defaultTo('');
-    table.timestamps(true, true)
+    table.timestamps(true, true);
   });
-
 };
 
 exports.down = function(knex) {

@@ -1,4 +1,7 @@
+'use strict';
 
+/* eslint camelcase: [2, {properties: "never"}] */
+/* eslint max-len: ["error", 2000] */
 exports.seed = function(knex) {
   // Deletes ALL existing entries
   return knex('books').del()

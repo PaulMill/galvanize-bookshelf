@@ -3,5 +3,8 @@ module.exports = {
     'ryansobol/es6',
     'ryansobol/mocha',
     'ryansobol/node'
-  ]
+  ],
+  rules: {
+    'camelcase': [2, {properties: "always"}]
+  }
 };
