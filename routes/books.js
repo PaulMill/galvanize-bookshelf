@@ -6,6 +6,7 @@ const express = require('express');
 const router = express.Router();
 const knex = require('../knex');
 const { camelizeKeys, decamelizeKeys } = require('humps');
+const boom = require('boom');
 
 router.get('/books', (_req, res, next) => {
   knex('books')
@@ -19,11 +20,21 @@ router.get('/books', (_req, res, next) => {
 });
 
 router.get('/books/:id', (req, res, next) => {
+
+//  <=============== part of bonus =================>
+  const id = Number.parseInt(req.params.id);
+
+  if (Number.isNaN(id) || id < 0) {
+    // throw boom.create(404, 'Not Found')   need to install npm 'boom'
+    throw next();
+  }
+
   knex('books')
-    .where('id', req.params.id)
+    .where('id', id)
     .first()
     .then((book) => {
       if (!book) {
+        // throw boom.create(404, 'Not Found')   need to install npm 'boom'
         return next();
       }
       res.send(camelizeKeys(book));
@@ -34,16 +45,34 @@ router.get('/books/:id', (req, res, next) => {
 });
 
 router.post('/books', (req, res, next) => {
+  const { title, author, genre, description, coverUrl } = req.body;
+
+  if (!title || !title.trim()) {
+    const err = new Error('Title must not be blank');
+
+    err.status = 400;
+
+    return next(err);
+  }
+  if (!author || !author.trim()) {
+    return next(boom.create(400, 'Author must not be blank'));
+  }
+  if (!genre || !genre.trim()) {
+    return next(boom.create(400, 'Genre name must not be blank'));
+  }
+  if (!description || !description.trim()) {
+
+    return next(boom.create(400, 'Description must not be blank'));
+  }
+  if (!coverUrl || !coverUrl.trim()) {
+    return next(boom.create(400, 'Cover URL must not be blank'));
+  }
+
+  const insertBook = { title, author, genre, description, coverUrl };
+
   knex('books')
-    .insert({
-      title: req.body.title,
-      author: req.body.author,
-      genre: req.body.genre,
-      description: req.body.description,
-      cover_url: req.body.coverUrl
-    }, '*')
+    .insert((decamelizeKeys(insertBook)), '*')
     .then((books) => {
-      res.set('Content-Type', 'application/json');
       res.send(camelizeKeys(books[0]));
     })
     .catch((err) => {
@@ -52,25 +81,51 @@ router.post('/books', (req, res, next) => {
 });
 
 router.patch('/books/:id', (req, res, next) => {
+  const id = Number.parseInt(req.params.id);
+
+  if (Number.isNaN(id)) {
+    return next();
+  }
+
   knex('books')
-    .where('id', req.params.id)
+    .where('id', id)
     .first()
     .then((book) => {
       if (!book) {
-        return next();
+        throw boom.create(404, 'Not Found');
       }
+
+      const { title, author, genre, description, coverUrl } = req.body;
+      const updateBook = {};
+
+      if (title) {
+        updateBook.title = title;
+      }
+
+      if (author) {
+        updateBook.author = author;
+      }
+
+      if (genre) {
+        updateBook.genre = genre;
+      }
+
+      if (description) {
+        updateBook.description = description;
+      }
+
+      if (coverUrl) {
+        updateBook.coverUrl = coverUrl;
+      }
+
       return knex('books')
-        .update({
-          title: req.body.title,
-          author: req.body.author,
-          genre: req.body.genre,
-          description: req.body.description,
-          cover_url: req.body.coverUrl
-        }, '*')
-        .where('id', req.params.id)
+        .update(decamelizeKeys(updateBook), '*')
+        .where('id', id);
     })
-    .then((books) => {
-      res.send(camelizeKeys(books[0]));
+    .then((rows) => {
+      const book = camelizeKeys(rows[0]);
+
+      res.send(book);
     })
     .catch((err) => {
       next(err);
@@ -78,21 +133,26 @@ router.patch('/books/:id', (req, res, next) => {
 });
 
 router.delete('/books/:id', (req, res, next) => {
+  const id = Number.parseInt(req.params.id);
+
+  if (Number.isNaN(id)) {
+    return next();
+  }
   knex('books')
     .del('*')
-    .where('id', req.params.id)
+    .where('id', id)
     .then((books) => {
-      if (!books.length) {
-        return next;
-      }
-      const tempB = books[0];
 
-      delete tempB.id;
-      res.send(camelizeKeys(tempB));
+      const book = books[0];
+      if (!book) {
+        return next();
+      }
+      delete book.id;
+      res.send(camelizeKeys(book));
     })
     .catch((err) => {
       next(err);
-    });
+    })
 });
 
 module.exports = router;
