@@ -5,6 +5,7 @@ const boom = require('boom');
 const express = require('express');
 const knex = require('../knex');
 const { camelizeKeys, decamelizeKeys } = require('humps');
+const jwt = require('jsonwebtoken');
 
 // eslint-disable-next-line new-cap
 const router = express.Router();
@@ -38,6 +39,17 @@ router.post('/users', (req, res, next) => {
     })
     .then((rows) => {
       const user = camelizeKeys(rows[0]);
+      const claim = { userId: user.id };
+      const token = jwt.sign(claim, process.env.JWT_KEY, {
+        expiresIn: '7 days'
+      });
+
+      res.cookie('token', token, {
+        httpOnly: true,
+        expires: new Date(
+          Date.now() + 1000 * 60 * 60 * 24 * 7),  // 7 days lives
+        secure: router.get('env') === 'production' // set from NODE_ENV
+      });
 
       delete user.hashedPassword;
 

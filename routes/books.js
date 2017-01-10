@@ -20,7 +20,6 @@ router.get('/books', (_req, res, next) => {
 });
 
 router.get('/books/:id', (req, res, next) => {
-
 //  <=============== part of bonus =================>
   const id = Number.parseInt(req.params.id);
 
@@ -61,7 +60,6 @@ router.post('/books', (req, res, next) => {
     return next(boom.create(400, 'Genre name must not be blank'));
   }
   if (!description || !description.trim()) {
-
     return next(boom.create(400, 'Description must not be blank'));
   }
   if (!coverUrl || !coverUrl.trim()) {
@@ -142,8 +140,8 @@ router.delete('/books/:id', (req, res, next) => {
     .del('*')
     .where('id', id)
     .then((books) => {
-
       const book = books[0];
+
       if (!book) {
         return next();
       }
@@ -152,7 +150,7 @@ router.delete('/books/:id', (req, res, next) => {
     })
     .catch((err) => {
       next(err);
-    })
+    });
 });
 
 module.exports = router;
