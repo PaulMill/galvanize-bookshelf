@@ -37,7 +37,6 @@ router.post('/token', (req, res, next) => {
       if (!row) {
         throw boom.create(400, 'Bad email or password');
       }
-
       user = camelizeKeys(row);
 
       return bcrypt.compare(password, user.hashedPassword);
@@ -58,9 +57,13 @@ router.post('/token', (req, res, next) => {
 
       res.send(user);
     })
+
+//  <=============== catch error from bcrypt.compare =================>
     .catch(bcrypt.MISMATCH_ERROR, () => {
       throw boom.create(400, 'Bad email or password');
     })
+
+//  <=============== catch other errors in the promise =================>
     .catch((err) => {
       next(err);
     });

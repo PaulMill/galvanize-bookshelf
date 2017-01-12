@@ -5,13 +5,13 @@ exports.up = function(knex) {
     table.increments();
     table.integer('book_id')
       .notNullable()
-      .references('id')
+      .references('books.id')
       .inTable('books')
       .onDelete('CASCADE')
       .index();
     table.integer('user_id')
       .notNullable()
-      .references('id')
+      .references('users.id')
       .inTable('users')
       .onDelete('CASCADE')
       .index();

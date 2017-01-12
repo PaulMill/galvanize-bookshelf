@@ -4,9 +4,9 @@ const express = require('express');
 
 // eslint-disable-next-line new-cap
 const router = express.Router();
+const boom = require('boom');
 const knex = require('../knex');
 const { camelizeKeys, decamelizeKeys } = require('humps');
-const boom = require('boom');
 
 router.get('/books', (_req, res, next) => {
   knex('books')
@@ -20,12 +20,10 @@ router.get('/books', (_req, res, next) => {
 });
 
 router.get('/books/:id', (req, res, next) => {
-//  <=============== part of bonus =================>
   const id = Number.parseInt(req.params.id);
 
-  if (Number.isNaN(id) || id < 0) {
-    // throw boom.create(404, 'Not Found')   need to install npm 'boom'
-    throw next();
+  if (!id || id < 0) {
+    return next(boom.create(404, 'Not Found'));
   }
 
   knex('books')
@@ -33,8 +31,7 @@ router.get('/books/:id', (req, res, next) => {
     .first()
     .then((book) => {
       if (!book) {
-        // throw boom.create(404, 'Not Found')   need to install npm 'boom'
-        return next();
+        throw boom.create(404, 'Not Found');
       }
       res.send(camelizeKeys(book));
     })
@@ -47,17 +44,13 @@ router.post('/books', (req, res, next) => {
   const { title, author, genre, description, coverUrl } = req.body;
 
   if (!title || !title.trim()) {
-    const err = new Error('Title must not be blank');
-
-    err.status = 400;
-
-    return next(err);
+    return next(boom.create(400, 'Title must not be blank'));
   }
   if (!author || !author.trim()) {
     return next(boom.create(400, 'Author must not be blank'));
   }
   if (!genre || !genre.trim()) {
-    return next(boom.create(400, 'Genre name must not be blank'));
+    return next(boom.create(400, 'Genre must not be blank'));
   }
   if (!description || !description.trim()) {
     return next(boom.create(400, 'Description must not be blank'));
@@ -81,7 +74,7 @@ router.post('/books', (req, res, next) => {
 router.patch('/books/:id', (req, res, next) => {
   const id = Number.parseInt(req.params.id);
 
-  if (Number.isNaN(id)) {
+  if (!id) {
     return next();
   }
 
@@ -133,7 +126,7 @@ router.patch('/books/:id', (req, res, next) => {
 router.delete('/books/:id', (req, res, next) => {
   const id = Number.parseInt(req.params.id);
 
-  if (Number.isNaN(id)) {
+  if (!id) {
     return next();
   }
   knex('books')
