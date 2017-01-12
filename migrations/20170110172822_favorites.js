@@ -4,17 +4,17 @@ exports.up = function(knex) {
   return knex.schema.createTable('favorites', (table) => {
     table.increments();
     table.integer('book_id')
-      .references('books.id')
-      .inTable('books')
-      .notNullable()
-      .onDelete('CASCADE')
-      .index();
+     .notNullable()
+     .references('books.id')
+     .inTable('books')
+     .onDelete('CASCADE')
+     .index();
     table.integer('user_id')
-      .references('users.id')
-      .inTable('users')
-      .notNullable()
-      .onDelete('CASCADE')
-      .index();
+     .notNullable()
+     .references('users.id')
+     .inTable('users')
+     .onDelete('CASCADE')
+     .index();
     table.timestamps(true, true);
   });
 };
