@@ -13,6 +13,6 @@ module.exports = {
 
   production: {
     client: 'pg',
-    connection: 'postgress://localhost/bookshelf_prod'
+    connection: process.env.DATABASE_URL
   }
 };
